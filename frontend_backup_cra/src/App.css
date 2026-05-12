@@ -1,0 +1,105 @@
+/* App specific styles */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+.App {
+  min-height: 100vh;
+}
+
+/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Montserrat as primary font */
+body {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom button styles */
+.btn-primary {
+  @apply bg-slate-900 text-white hover:bg-slate-800 px-8 py-3 font-medium transition-all duration-300 hover:shadow-lg;
+}
+
+.btn-secondary {
+  @apply border border-slate-900 text-slate-900 hover:bg-slate-50 px-8 py-3 font-medium transition-all;
+}
+
+.btn-gold {
+  background-color: var(--caribbean-gold);
+  color: white;
+  @apply px-8 py-3 font-medium transition-all duration-300 hover:shadow-lg;
+}
+
+.btn-gold:hover {
+  background-color: var(--gold-light);
+}
+
+/* Input styles */
+.input-custom {
+  @apply border-stone-200 focus:border-slate-900 focus:ring-0 bg-white/80 backdrop-blur-sm;
+}
+
+/* Card styles */
+.card-property {
+  @apply relative overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-500 border border-stone-100;
+}
+
+/* Section spacing */
+.section-padding {
+  @apply py-16 md:py-24 px-4 md:px-8;
+}
+
+/* Container max width */
+.container-custom {
+  @apply max-w-7xl mx-auto;
+}
+
+/* Text gradient gold */
+.text-gold {
+  color: var(--caribbean-gold);
+}
+
+/* Background colors */
+.bg-navy {
+  background-color: var(--royal-navy);
+}
+
+.bg-gold {
+  background-color: var(--caribbean-gold);
+}
+
+/* Responsive video container */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-container iframe,
+.video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Map container */
+.map-container {
+  height: 300px;
+  width: 100%;
+  background-color: #e5e5e5;
+  border-radius: 0;
+}
+
+/* Gallery lightbox */
+.lightbox-overlay {
+  @apply fixed inset-0 bg-black/90 z-50 flex items-center justify-center;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply animate-pulse bg-stone-200;
+}

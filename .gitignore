@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+
+# Builds
+/build
+dist/
+frontend/build/
+
+# Environment
+.env
+.env.*
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Emergent
+.emergent/
+.emergent
+
+# Cache
+.cache/
+*.pack
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+frontend/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
+frontend/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
+frontend/node_modules/.cache/default-development/0.pack
+frontend/node_modules/.cache/default-development/0.pack
+frontend_nextjs_backup/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+frontend_nextjs_backup/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+frontend_nextjs_backup/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials

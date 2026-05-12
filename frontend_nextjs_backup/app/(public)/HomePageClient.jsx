@@ -1,0 +1,286 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, ChevronDown, Eye, CheckCircle, Users, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import PropertyCard from '@/components/PropertyCard';
+import SearchBar from '@/components/SearchBar';
+
+const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80';
+
+export default function HomePageClient({ agency, featuredProperties, initialViews }) {
+  const router = useRouter();
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [totalViews, setTotalViews] = useState(initialViews);
+  const viewTracked = useRef(false);
+
+  const heroImages = agency?.hero_images?.length > 0 ? agency.hero_images : [DEFAULT_HERO_IMAGE];
+  const videoUrl = agency?.hero_video_url || '';
+
+  const isYouTubeUrl = (url) => url && (url.includes('youtube.com') || url.includes('youtu.be'));
+
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return null;
+    const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1` : null;
+  };
+
+  useEffect(() => {
+    // Track visit
+    if (!viewTracked.current) {
+      viewTracked.current = true;
+      fetch('/api/views?page=home', { method: 'POST' }).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (heroImages.length > 1 && !videoUrl) {
+      const interval = setInterval(() => {
+        setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [heroImages.length, videoUrl]);
+
+  const handleSearch = (filters) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, value);
+    });
+    router.push(`/propiedades?${params.toString()}`);
+  };
+
+  const scrollToSearch = () => {
+    document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <div data-testid="home-page" className="overflow-x-hidden">
+      
+      {/* HERO SECTION - 100vh desktop, 33vh mobile */}
+      <section 
+        className="hero-section relative w-full overflow-hidden"
+        style={{ height: '100vh', minHeight: '500px' }}
+      >
+        {/* Video Background */}
+        {videoUrl && isYouTubeUrl(videoUrl) ? (
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <iframe
+              src={getYouTubeEmbedUrl(videoUrl)}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              style={{
+                width: '177.77vh',
+                height: '100vh',
+                minWidth: '100%',
+                minHeight: '56.25vw',
+                position: 'absolute',
+              }}
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              title="Hero Video"
+            />
+          </div>
+        ) : videoUrl && !isYouTubeUrl(videoUrl) ? (
+          <video 
+            className="absolute inset-0 w-full h-full"
+            style={{ objectFit: 'cover', position: 'absolute', top: 0, left: 0 }}
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+          >
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+        ) : (
+          heroImages.map((image, index) => (
+            <div
+              key={index}
+              className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000"
+              style={{ 
+                backgroundImage: `url(${image})`, 
+                opacity: index === currentHeroIndex ? 1 : 0,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+              }}
+            />
+          ))
+        )}
+        
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" style={{ zIndex: 5 }} />
+        
+        {/* View Counter - Bottom right floating */}
+        <div 
+          className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-xs md:text-sm"
+          style={{ 
+            position: 'absolute', 
+            bottom: '80px', 
+            right: '16px', 
+            zIndex: 100,
+          }}
+        >
+          <Eye className="h-3 w-3 md:h-4 md:w-4" />
+          <span>{totalViews.toLocaleString()}</span>
+        </div>
+        
+        {/* Hero Content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4" style={{ zIndex: 10 }}>
+          <h1 
+            className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 max-w-4xl leading-tight"
+            style={{ fontFamily: "'Montserrat', sans-serif", textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}
+          >
+            {agency?.hero_headline || 'Tenemos las Llaves del Hogar que Buscas'}
+          </h1>
+          {agency?.hero_subheadline && (
+            <p className="text-base md:text-xl text-white/90 mb-8 max-w-2xl" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+              {agency.hero_subheadline}
+            </p>
+          )}
+        </div>
+
+        {/* Image Indicators */}
+        {heroImages.length > 1 && !videoUrl && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2" style={{ zIndex: 20 }}>
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentHeroIndex(index)}
+                className={`w-2 h-2 rounded-full transition-all ${index === currentHeroIndex ? 'bg-white w-6' : 'bg-white/50'}`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Scroll Indicator */}
+        <button onClick={scrollToSearch} className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce" style={{ zIndex: 20 }}>
+          <ChevronDown className="h-8 w-8 text-white/80" />
+        </button>
+      </section>
+
+      {/* SEARCH BAR */}
+      <section id="search-section" className="relative -mt-16 z-20 px-4 md:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+            <SearchBar onSearch={handleSearch} locations={[]} />
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURED PROPERTIES */}
+      <section className="py-16 md:py-24 px-4 md:px-8 bg-stone-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-amber-600 font-medium tracking-wider uppercase text-sm">Propiedades Destacadas</span>
+            <h2 className="text-2xl md:text-4xl font-bold text-slate-900 mt-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              Descubre tu Próximo Hogar
+            </h2>
+          </div>
+
+          {featuredProperties.length === 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => <div key={i} className="bg-white rounded-xl h-96 animate-pulse" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProperties.map((property) => <PropertyCard key={property.id} property={property} />)}
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link href="/propiedades">
+              <Button size="lg" className="bg-slate-900 hover:bg-slate-800 text-white px-8">
+                Ver Todas las Propiedades <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* WHY CHOOSE US */}
+      <section className="py-16 md:py-24 px-4 md:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-amber-600 font-medium tracking-wider uppercase text-sm">¿Por qué elegirnos?</span>
+            <h2 className="text-2xl md:text-4xl font-bold text-slate-900 mt-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              Tu Socio Inmobiliario de Confianza
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {agency?.feature1_title || 'Experiencia Comprobada'}
+              </h3>
+              <p className="text-stone-600">{agency?.feature1_description || 'Más de 15 años de experiencia en el mercado inmobiliario dominicano.'}</p>
+            </div>
+            <div className="text-center p-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+                <Users className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {agency?.feature2_title || 'Atención Personalizada'}
+              </h3>
+              <p className="text-stone-600">{agency?.feature2_description || 'Un equipo dedicado a encontrar la propiedad perfecta para ti.'}</p>
+            </div>
+            <div className="text-center p-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+                <DollarSign className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {agency?.feature3_title || 'Precios Competitivos'}
+              </h3>
+              <p className="text-stone-600">{agency?.feature3_description || 'Las mejores opciones de inversión al mejor precio del mercado.'}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section 
+        className="py-20 md:py-28 px-4 md:px-8 relative bg-cover bg-center bg-fixed"
+        style={{ backgroundImage: `url(${heroImages[0]})` }}
+      >
+        <div className="absolute inset-0 bg-slate-900/80" />
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-2xl md:text-4xl font-bold text-white mb-6" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            ¿Listo para encontrar tu propiedad ideal?
+          </h2>
+          <p className="text-white/80 text-base md:text-lg mb-8 max-w-2xl mx-auto">
+            Nuestro equipo de expertos está listo para ayudarte.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/propiedades">
+              <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-white px-8">Explorar Propiedades</Button>
+            </Link>
+            <Link href="/contacto">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-slate-900 px-8">Contactar</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CSS for mobile hero height */}
+      <style>{`
+        @media (max-width: 767px) {
+          .hero-section {
+            height: 33vh !important;
+            min-height: 250px !important;
+          }
+        }
+        @media (min-width: 768px) {
+          .hero-section {
+            height: 100vh !important;
+            min-height: 500px !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}

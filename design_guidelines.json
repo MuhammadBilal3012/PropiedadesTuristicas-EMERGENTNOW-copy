@@ -1,0 +1,153 @@
+{
+  "project_name": "Propiedades Turísticas RD",
+  "design_philosophy": {
+    "identity": "E1: The Anti-AI Designer",
+    "core_principles": [
+      "Fusion over Imitation: Mix Tropical Warmth with Swiss Precision.",
+      "Emotion First: Sell the 'Dream of Island Living', not just square footage.",
+      "Content is King: High-resolution imagery is the hero. UI recedes.",
+      "Negative Space: Luxury = Space. Don't crowd the listings."
+    ],
+    "anti_patterns": [
+      "No generic 'Bootstrap' grids.",
+      "No 'Inter' font for headings (Use Playfair Display).",
+      "No pure black (#000000) or pure gray (#808080).",
+      "No 'Tech Blue' gradients. Use deep, rich Navy or Teal."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Playfair Display, serif",
+      "body": "Manrope, sans-serif",
+      "accent": "Cormorant Garamond, serif"
+    },
+    "weights": {
+      "headings": "font-semibold (600) or font-bold (700)",
+      "body": "font-normal (400) or font-medium (500)"
+    },
+    "usage_rules": [
+      "Headings (H1-H3) MUST use Playfair Display.",
+      "Body text and UI elements MUST use Manrope.",
+      "Use 'tracking-tight' for all large headings.",
+      "Use 'tracking-wide' for small uppercase labels (e.g., 'FOR SALE')."
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Royal Navy",
+        "hex": "#0F172A",
+        "tailwind": "bg-slate-900 text-white"
+      },
+      "secondary": {
+        "name": "Caribbean Gold",
+        "hex": "#C5A059",
+        "tailwind": "text-amber-600 bg-amber-50"
+      },
+      "background": {
+        "main": "#FAFAF9",
+        "tailwind": "bg-stone-50"
+      },
+      "surface": {
+        "card": "#FFFFFF",
+        "tailwind": "bg-white"
+      },
+      "text": {
+        "primary": "#1C1917",
+        "secondary": "#57534E",
+        "tailwind_primary": "text-stone-900",
+        "tailwind_secondary": "text-stone-600"
+      }
+    },
+    "gradients": {
+      "hero_overlay": "bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent",
+      "gold_shimmer": "bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 rounded-none px-8 py-3 font-medium transition-all duration-300 hover:shadow-lg",
+      "secondary": "border border-slate-900 text-slate-900 hover:bg-slate-50 rounded-none px-8 py-3 font-medium transition-all",
+      "ghost": "text-slate-900 hover:text-amber-600 font-medium hover:bg-transparent"
+    },
+    "cards": {
+      "property": "group relative overflow-hidden bg-white rounded-none shadow-sm hover:shadow-xl transition-all duration-500 border border-stone-100",
+      "feature": "bg-stone-100 p-8 rounded-none hover:bg-white hover:shadow-md transition-all"
+    },
+    "inputs": {
+      "default": "rounded-none border-stone-200 focus:border-slate-900 focus:ring-0 bg-white/80 backdrop-blur-sm"
+    },
+    "navigation": {
+      "container": "fixed top-0 w-full z-50 transition-all duration-300",
+      "scrolled": "bg-white/90 backdrop-blur-md shadow-sm py-4",
+      "transparent": "bg-transparent py-6"
+    }
+  },
+  "layout_strategies": {
+    "hero_section": {
+      "type": "Immersive Video/Image",
+      "structure": "Full-screen (h-screen) background with centered, floating search bar.",
+      "overlay": "Heavy gradient at bottom to ensure text readability.",
+      "content": "Headline: 'Encuentra tu Paraíso en RD'. Subhead: 'Propiedades exclusivas para una vida extraordinaria'."
+    },
+    "property_grid": {
+      "type": "Bento Grid (Mode A)",
+      "classes": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8",
+      "rules": [
+        "First item spans 2 columns if possible (Featured).",
+        "Images must be tall (aspect-[4/5]) or wide (aspect-[16/9]) - avoid squares.",
+        "Use negative space between cards."
+      ]
+    },
+    "detail_page": {
+      "layout": "Split view: Left side sticky gallery, Right side scrollable details + contact form.",
+      "gallery": "Masonry grid of images."
+    }
+  },
+  "image_assets": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1760067537255-64d36262cb0a?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "alt": "Luxury Villa with Pool in Dominican Republic"
+    },
+    "featured_properties": [
+      {
+        "url": "https://images.unsplash.com/photo-1759722668087-efcc63c91ed2?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Modern Apartment Interior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1724598260678-644e11a6febf?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Beachfront View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1757439402190-99b73ac8e807?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Luxury Kitchen"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1760067537640-6ffab10b27d2?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Villa Lounge Area"
+      }
+    ],
+    "about_section": {
+      "url": "https://images.unsplash.com/photo-1724598674807-6acb225b98f2?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "alt": "Aerial View of Resort Area"
+    }
+  },
+  "motion_guidelines": {
+    "library": "framer-motion",
+    "transitions": "transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }",
+    "scroll": "Use 'whileInView' for sections fading in up.",
+    "hover": "Images scale slightly (1.05) on hover. Text underlines slide in."
+  },
+  "accessibility_rules": {
+    "contrast": "Ensure Gold text is only used on Dark backgrounds. Use Dark Gray for text on White.",
+    "labels": "All icon-only buttons (like WhatsApp) must have aria-labels.",
+    "focus": "Visible focus rings on all interactive elements (use ring-slate-900)."
+  },
+  "universal_guidelines": [
+    "Do not use generic 'Lorem Ipsum'. Use realistic Spanish real estate copy.",
+    "Ensure the WhatsApp button is floating bottom-right, z-index 50.",
+    "Use 'lucide-react' for icons (MapPin, Bed, Bath, Square).",
+    "Forms must use Shadcn UI components but styled to match the 'Stone/Navy' theme."
+  ],
+  "instructions_to_main_agent": "You are building a premium Real Estate platform. Do not make it look like a dashboard. It should feel like a magazine. Use the provided image URLs. Implement the 'Bento' grid for the property list. Ensure the 'Contact' form is elegant and not cluttered."
+}
