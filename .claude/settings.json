@@ -40,7 +40,14 @@
       "Bash(\"e:/Personal Projects/PropiedadesTuristicas-EMERGENTNOW - Copy/.venv313/Scripts/pip.exe\" install cloudinary==1.41.0)",
       "Bash(./.venv313/Scripts/python.exe backend/scripts/migrate_uploads_to_cloudinary.py)",
       "Bash(\"e:/Personal Projects/PropiedadesTuristicas-EMERGENTNOW - Copy/.venv313/Scripts/python.exe\" -c \"import sys; print\\('\\\\n'.join\\(sys.path\\)\\)\")",
-      "Bash(\"e:/Personal Projects/PropiedadesTuristicas-EMERGENTNOW - Copy/.venv313/Scripts/python.exe\" -m pip install cloudinary==1.41.0)"
+      "Bash(\"e:/Personal Projects/PropiedadesTuristicas-EMERGENTNOW - Copy/.venv313/Scripts/python.exe\" -m pip install cloudinary==1.41.0)",
+      "Bash(git ls-tree *)",
+      "Bash(curl.exe -s -w \"\\\\nHTTP %{http_code}\\\\n\" https://propiedades-rd-backend.vercel.app/api/)",
+      "Bash(curl.exe -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://propiedades-rd-backend.vercel.app/api/properties?limit=3\")",
+      "Bash(curl.exe -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://propiedades-rd-backend.vercel.app/api/properties?limit=2\")",
+      "Bash(curl.exe -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://propiedades-rd-backend.vercel.app/api/agency\")",
+      "Bash(curl.exe -s -w \"\\\\nHTTP %{http_code}\\\\n\" https://propiedades-rd.vercel.app/)",
+      "Bash(curl.exe -s -i -X OPTIONS https://propiedades-rd-backend.vercel.app/api/properties -H \"Origin: https://propiedades-rd.vercel.app\" -H \"Access-Control-Request-Method: GET\")"
     ]
   }
 }
