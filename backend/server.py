@@ -18,9 +18,23 @@ import bcrypt
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Create uploads directory
+# Cloudinary (used in production for uploads since Vercel filesystem is read-only).
+# If CLOUDINARY_URL is set, uploads go to Cloudinary; otherwise fall back to local disk.
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+USE_CLOUDINARY = bool(CLOUDINARY_URL)
+if USE_CLOUDINARY:
+    import cloudinary
+    import cloudinary.uploader
+    cloudinary.config(secure=True)  # auto-reads CLOUDINARY_URL from env
+
+# Local uploads dir — only used when Cloudinary is not configured (local dev).
 UPLOADS_DIR = ROOT_DIR / "uploads"
-UPLOADS_DIR.mkdir(exist_ok=True)
+if not USE_CLOUDINARY:
+    try:
+        UPLOADS_DIR.mkdir(exist_ok=True)
+    except OSError:
+        # Vercel filesystem is read-only — safe to ignore, uploads will be Cloudinary-only.
+        pass
 
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'propiedades-turisticas-rd-secret-key-2024')
@@ -597,16 +611,22 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
 async def upload_file(file: UploadFile = File(...)):
     allowed_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'}
     file_ext = Path(file.filename).suffix.lower()
-    
+
     if file_ext not in allowed_extensions:
         raise HTTPException(status_code=400, detail="Tipo de archivo no permitido")
-    
+
+    if USE_CLOUDINARY:
+        result = cloudinary.uploader.upload(
+            file.file,
+            folder="propiedades-rd",
+            resource_type="image",
+        )
+        return {"url": result["secure_url"], "filename": result["public_id"]}
+
     unique_filename = f"{uuid.uuid4()}{file_ext}"
     file_path = UPLOADS_DIR / unique_filename
-    
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    
     return {"url": f"/api/uploads/{unique_filename}", "filename": unique_filename}
 
 # ==================== VISIT TRACKING ====================
@@ -1269,7 +1289,9 @@ async def root():
 
 # Include router and mount static files
 app.include_router(api_router)
-app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+# Only mount the local uploads dir if it actually exists (skipped on Vercel where the FS is read-only).
+if UPLOADS_DIR.is_dir():
+    app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,

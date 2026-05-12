@@ -1,162 +1,156 @@
-# Guía de Despliegue — Vercel (Frontend) + Render (Backend) + MongoDB Atlas (BD)
+# Deployment Guide — Vercel (Frontend + Backend) + MongoDB Atlas + Cloudinary
 
-Esta guía te lleva paso a paso para desplegar **Propiedades Turísticas RD** en producción usando los planes gratuitos de Vercel + Render + MongoDB Atlas.
+This project deploys as **two separate Vercel projects** sharing one GitHub repo:
 
----
+| Project | Root Directory | Framework |
+|---|---|---|
+| Frontend | `frontend` | Create React App |
+| Backend  | `backend`  | Python (FastAPI on Fluid Compute) |
 
-## 1. MongoDB Atlas (base de datos)
+Storage: **MongoDB Atlas** (data) + **Cloudinary** (uploaded images).
 
-1. Ve a https://cloud.mongodb.com y crea una cuenta gratuita.
-2. **Build a Database** → elige `M0 Free` → región `AWS / N. Virginia` (más cercana a Render Oregon).
-3. **Database Access** → `Add New Database User`:
-   - Username: `propiedadesrd`
-   - Password: genera una segura (guárdala)
-   - Built-in role: `Atlas admin`
-4. **Network Access** → `Add IP Address` → `Allow access from anywhere` (0.0.0.0/0).
-5. **Connect** (botón verde) → `Drivers` → copia el connection string. Se ve así:
-   ```
-   mongodb+srv://propiedadesrd:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
-   ```
-   Reemplaza `<password>` con la real y agrega el nombre de la BD antes del `?`:
-   ```
-   mongodb+srv://propiedadesrd:TU_PASSWORD@cluster0.xxxxx.mongodb.net/propiedades_rd?retryWrites=true&w=majority
-   ```
+All services have free tiers that comfortably fit this app.
 
 ---
 
-## 2. Render (backend FastAPI)
+## 1. MongoDB Atlas
 
-### Opción A — usando el archivo `render.yaml` incluido (más fácil)
+Already set up — see your existing cluster. Keep the connection string handy.
+If you need to start over: https://www.mongodb.com/cloud/atlas/register → create an `M0 FREE` cluster → create a DB user → allow `0.0.0.0/0` in Network Access → copy the connection string.
 
-1. Sube el repo a GitHub.
-2. Ve a https://dashboard.render.com → **New** → **Blueprint**.
-3. Conecta tu repo. Render detectará `render.yaml`.
-4. Te pedirá rellenar las variables marcadas como `sync: false`:
-   - `MONGO_URL`: connection string de MongoDB Atlas (paso 1)
-   - `CORS_ORIGINS`: pega la URL de Vercel (la obtendrás después). Inicialmente puedes poner `*` y restringir luego.
-5. **Apply** → Render construye y despliega.
-6. Cuando termine, copia la URL pública (ej. `https://propiedades-rd-backend.onrender.com`).
+Required values:
+- `MONGO_URL` — `mongodb+srv://USER:PASS@cluster.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+- `DB_NAME` — `propiedades_turisticas`
 
-### Opción B — manual
+---
 
-1. **New** → **Web Service** → conecta tu repo.
-2. Configuración:
-   - **Root Directory**: `backend`
-   - **Runtime**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn server:app --host 0.0.0.0 --port $PORT`
+## 2. Cloudinary (image uploads)
+
+Vercel's serverless filesystem is read-only, so admin-panel image uploads can't write to disk. Cloudinary stores them externally.
+
+1. Sign up at https://cloudinary.com/users/register/free (free tier: 25 GB storage / 25 GB bandwidth).
+2. Go to **Dashboard** → **API Keys** tab.
+3. Click the copy icon next to **API Environment variable**. The value looks like:
+   ```
+   cloudinary://123456789012345:abcDEF-ghiJKL-mnoPQRstu@yourcloudname
+   ```
+4. Save it — you'll paste it into Vercel as `CLOUDINARY_URL`.
+
+> **Tip:** locally you can omit `CLOUDINARY_URL` from [backend/.env](backend/.env) — uploads will fall back to the on-disk [backend/uploads/](backend/uploads/) folder.
+
+---
+
+## 3. Push the repo to GitHub
+
+If you haven't already:
+```powershell
+git add .
+git commit -m "Prepare for Vercel deployment"
+git push
+```
+
+---
+
+## 4. Deploy the **backend** on Vercel
+
+1. https://vercel.com/new → import the repo.
+2. **Configure project**:
+   - **Project Name**: `propiedades-rd-backend` (or anything)
+   - **Root Directory**: click **Edit** → select `backend`
+   - **Framework Preset**: Other (Vercel auto-detects `vercel.json` + Python)
+3. **Environment Variables** → add all five:
+
+   | Key | Value |
+   |---|---|
+   | `MONGO_URL` | (your Atlas connection string) |
+   | `DB_NAME` | `propiedades_turisticas` |
+   | `JWT_SECRET` | a long random string (≥ 32 chars) |
+   | `CLOUDINARY_URL` | (from step 2) |
+   | `CORS_ORIGINS` | `*` for now — you'll restrict it in step 6 |
+
+4. Click **Deploy**.
+5. Once deployed, copy the URL (e.g. `https://propiedades-rd-backend.vercel.app`). Verify it works:
+   ```
+   https://propiedades-rd-backend.vercel.app/api/
+   ```
+   You should see `{"message":"Propiedades Turísticas RD API"}`.
+
+---
+
+## 5. Deploy the **frontend** on Vercel
+
+1. https://vercel.com/new → import the **same repo** again as a separate project.
+2. **Configure project**:
+   - **Project Name**: `propiedades-rd` (or anything)
+   - **Root Directory**: click **Edit** → select `frontend`
+   - **Framework Preset**: Create React App (auto-detected)
 3. **Environment Variables**:
-   ```
-   MONGO_URL=mongodb+srv://...
-   DB_NAME=propiedades_rd
-   JWT_SECRET=<genera-uno-largo-y-aleatorio>
-   CORS_ORIGINS=https://tu-app.vercel.app
-   ```
-4. **Create Web Service**.
 
-> ⚠️ **Plan Free de Render**: el servicio se duerme tras 15 min sin tráfico. La primera petición tras dormir tarda ~30s. Para producción real considera el plan `Starter` (USD 7/mes).
+   | Key | Value |
+   |---|---|
+   | `REACT_APP_BACKEND_URL` | The backend URL from step 4 (no trailing slash) |
 
-> ⚠️ **Uploads de archivos**: en plan Free el disco NO es persistente. Las imágenes subidas vía panel admin se borrarán en cada redeploy. Para imágenes persistentes sube a un servicio externo (Cloudinary, AWS S3) o usa el plan con disco persistente de Render.
+4. Click **Deploy**.
+5. Copy the public URL (e.g. `https://propiedades-rd.vercel.app`).
 
 ---
 
-## 3. Vercel (frontend React)
+## 6. Lock down CORS
 
-### Opción A — desde la UI
+Back to the **backend** project on Vercel:
 
-1. Sube el repo a GitHub (si no lo hiciste).
-2. Ve a https://vercel.com → **Add New** → **Project** → importa el repo.
-3. Configuración:
-   - **Framework Preset**: `Create React App`
-   - **Root Directory**: `frontend` (clic en `Edit` y selecciona la carpeta)
-   - **Build Command**: `yarn build` (default)
-   - **Output Directory**: `build` (default)
-4. **Environment Variables**:
+1. **Settings** → **Environment Variables** → edit `CORS_ORIGINS`:
    ```
-   REACT_APP_BACKEND_URL=https://propiedades-rd-backend.onrender.com
+   https://propiedades-rd.vercel.app,http://localhost:3000
    ```
-   (Sin slash final.)
-5. **Deploy**.
-
-### Opción B — usando `vercel.json` (incluido en el repo)
-
-El archivo `/app/vercel.json` ya tiene la configuración. Sólo:
-- Importa el repo en Vercel.
-- Añade la variable `REACT_APP_BACKEND_URL`.
-- Deploy.
+   (Add your custom domain too, if you have one.)
+2. **Deployments** → click the latest → **Redeploy** so the new env var takes effect.
 
 ---
 
-## 4. Conectar todo (CORS)
+## 7. First-time data setup
 
-Después de desplegar Vercel:
-1. Copia la URL pública de Vercel (ej. `https://propiedades-rd.vercel.app`).
-2. Vuelve a Render → tu servicio → **Environment** → edita `CORS_ORIGINS`:
-   ```
-   CORS_ORIGINS=https://propiedades-rd.vercel.app,http://localhost:3000
-   ```
-3. Render redesplegará automáticamente.
+The first time the home page loads, the frontend automatically calls `POST /api/seed`, which idempotently inserts 6 sample properties and 8 locations.
+
+To create the default admin user, hit:
+```
+https://propiedades-rd-backend.vercel.app/api/auth/setup
+```
+(POST request — easiest via the FastAPI docs at `https://propiedades-rd-backend.vercel.app/docs`)
+
+Default credentials: `admin` / `admin123` — **change them immediately** from the admin panel.
 
 ---
 
-## 5. Variables de entorno — resumen
+## 8. Custom domain (optional)
 
-### Backend (Render)
-| Variable | Valor | Obligatoria |
+Frontend project → **Settings** → **Domains** → add your domain. Vercel handles SSL automatically.
+
+Don't forget to add the new domain to `CORS_ORIGINS` on the backend.
+
+---
+
+## Env-var cheat sheet
+
+### Backend
+| Variable | Required | Notes |
 |---|---|---|
-| `MONGO_URL` | `mongodb+srv://user:pass@cluster.mongodb.net/propiedades_rd?retryWrites=true&w=majority` | ✅ |
-| `DB_NAME` | `propiedades_rd` | ✅ |
-| `JWT_SECRET` | string aleatorio largo (≥32 chars) | ✅ |
-| `CORS_ORIGINS` | `https://tu-app.vercel.app,http://localhost:3000` | ✅ |
-| `PYTHON_VERSION` | `3.11` | recomendado |
+| `MONGO_URL` | ✅ | Atlas connection string with `retryWrites=true&w=majority` |
+| `DB_NAME` | ✅ | `propiedades_turisticas` |
+| `JWT_SECRET` | ✅ | ≥ 32 random chars |
+| `CLOUDINARY_URL` | ✅ on Vercel | Falls back to disk locally if unset |
+| `CORS_ORIGINS` | ✅ | Comma-separated origin list |
 
-> Render expone `$PORT` automáticamente. **NO** definas `PORT` manualmente.
-
-### Frontend (Vercel)
-| Variable | Valor | Obligatoria |
+### Frontend
+| Variable | Required | Notes |
 |---|---|---|
-| `REACT_APP_BACKEND_URL` | `https://propiedades-rd-backend.onrender.com` | ✅ |
+| `REACT_APP_BACKEND_URL` | ✅ | Backend Vercel URL, no trailing slash |
 
 ---
 
-## 6. Primera sembrada de datos
+## Notes & caveats
 
-La primera vez que cargue la home, el frontend llamará a `POST /api/seed` automáticamente. Si la base de datos está vacía, sembrará:
-- 6 propiedades de ejemplo
-- 8 ubicaciones
-- Usuario admin: `admin` / `admin123` ⚠️ **Cambia esta contraseña inmediatamente** desde el panel admin (botón 🔑 Contraseña en la barra superior).
-
-Si la BD ya tiene datos, el seed no hace nada (es idempotente). **Tus datos del panel admin se mantienen entre deploys.**
-
----
-
-## 7. Persistencia de datos
-
-✅ Toda la información introducida desde el panel admin (propiedades, agentes, configuración, mensajes) vive en MongoDB Atlas — no se pierde con redeploys ni reinicios.
-
-⚠️ Las **imágenes subidas** vía panel admin se almacenan en disco local del backend. En el plan Free de Render, el disco se borra en cada deploy. Soluciones:
-- **Recomendado**: integrar Cloudinary (gratis hasta 25GB) o AWS S3 para almacenamiento persistente de imágenes.
-- **Alternativa**: usar plan de pago de Render con disco persistente.
-
----
-
-## 8. Checklist final
-
-- [ ] MongoDB Atlas creado y connection string copiado
-- [ ] Render desplegado, URL del backend copiada
-- [ ] Vercel desplegado con `REACT_APP_BACKEND_URL` configurado
-- [ ] `CORS_ORIGINS` en Render actualizado con la URL de Vercel
-- [ ] Visitaste `https://tu-app.vercel.app` y carga correctamente
-- [ ] Hiciste login en `/admin` y cambiaste la contraseña por defecto
-- [ ] Verificaste que las propiedades del seed aparecen en la página
-
----
-
-## 9. Tips de producción
-
-- **Custom domain** en Vercel: Settings → Domains → añade el dominio.
-- **Mantén Render despierto**: usa https://uptimerobot.com (gratis) para hacer ping cada 5 min al backend, así no se duerme.
-- **Logs**:
-  - Render: Dashboard → tu servicio → Logs
-  - Vercel: Dashboard → tu proyecto → Logs
-- **MongoDB backups**: Atlas M0 incluye snapshots cada 6h automáticos.
+- **Existing local uploads** ([backend/uploads/](backend/uploads/), 65 files) are excluded from the Vercel deploy via [backend/.vercelignore](backend/.vercelignore). Any property/agency-settings doc in MongoDB that references `/api/uploads/<file>` will 404 in production. The seeded sample data uses Unsplash URLs, so the demo works out of the box. Re-upload your own assets through the admin panel to push them to Cloudinary.
+- **Cold starts**: Vercel Hobby plan scales to zero; the first request after idle adds ~1–3 s. Fluid Compute keeps subsequent requests warm.
+- **Function size**: [backend/requirements.txt](backend/requirements.txt) was slimmed from 124 packages → 10 to fit Vercel's 250 MB limit. If you re-add heavy deps (pandas, boto3, etc.) check the deploy log for size warnings.
+- **Logs**: Vercel dashboard → Project → **Logs** tab. Watch this on first deploy to catch any env-var or Mongo connection issues.
