@@ -50,7 +50,10 @@
       "Bash(curl.exe -s -i -X OPTIONS https://propiedades-rd-backend.vercel.app/api/properties -H \"Origin: https://propiedades-rd.vercel.app\" -H \"Access-Control-Request-Method: GET\")",
       "Bash(curl.exe -s \"https://propiedades-rd-backend.vercel.app/api/agency\")",
       "Bash(python -c \"import sys, json; d=json.load\\(sys.stdin\\); print\\('logo_url:', d.get\\('logo_url'\\)\\); print\\('hero_logo_url:', d.get\\('hero_logo_url'\\)\\); print\\('hero_image_url:', d.get\\('hero_image_url'\\)\\); print\\('hero_images:', d.get\\('hero_images'\\)\\)\")",
-      "Bash(./.venv313/Scripts/python.exe backend/scripts/fix_corrupted_urls.py)"
+      "Bash(./.venv313/Scripts/python.exe backend/scripts/fix_corrupted_urls.py)",
+      "Bash(git config *)",
+      "Bash(git remote *)",
+      "Bash(grep -E \"\\\\.env$|\\\\.env\\\\.\")"
     ]
   }
 }
