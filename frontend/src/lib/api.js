@@ -158,14 +158,19 @@ export const deleteContactMessage = async (id) => {
   return response.data;
 };
 
-// File Upload
+// File Upload — returns { url, filename }. `url` is always absolute and ready to render:
+// Cloudinary already returns a full https URL; for the local-disk fallback we prepend BACKEND_URL.
 export const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
   const response = await axios.post(`${API}/upload`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return response.data;
+  const data = response.data;
+  if (data?.url && !/^https?:\/\//i.test(data.url)) {
+    data.url = `${BACKEND_URL}${data.url}`;
+  }
+  return data;
 };
 
 // Statistics

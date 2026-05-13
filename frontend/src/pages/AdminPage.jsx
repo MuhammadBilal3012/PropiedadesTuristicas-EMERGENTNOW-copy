@@ -202,8 +202,7 @@ const AdminDashboard = ({ user, onLogout }) => {
     if (!file) return;
     try {
       const result = await uploadFile(file);
-      const logoUrl = `${BACKEND_URL}${result.url}`;
-      setAgency(prev => ({ ...prev, logo_url: logoUrl }));
+      setAgency(prev => ({ ...prev, logo_url: result.url }));
       toast.success('Logo del header subido');
     } catch (error) {
       toast.error('Error al subir el logo');
@@ -215,8 +214,7 @@ const AdminDashboard = ({ user, onLogout }) => {
     if (!file) return;
     try {
       const result = await uploadFile(file);
-      const logoUrl = `${BACKEND_URL}${result.url}`;
-      setAgency(prev => ({ ...prev, hero_logo_url: logoUrl }));
+      setAgency(prev => ({ ...prev, hero_logo_url: result.url }));
       toast.success('Logo flotante del hero subido');
     } catch (error) {
       toast.error('Error al subir el logo');
@@ -228,10 +226,9 @@ const AdminDashboard = ({ user, onLogout }) => {
     if (!file) return;
     try {
       const result = await uploadFile(file);
-      const imageUrl = `${BACKEND_URL}${result.url}`;
       setAgency(prev => ({
         ...prev,
-        hero_images: [...(prev.hero_images || []), imageUrl]
+        hero_images: [...(prev.hero_images || []), result.url]
       }));
       toast.success('Imagen del hero subida');
     } catch (error) {
@@ -316,10 +313,9 @@ const AdminDashboard = ({ user, onLogout }) => {
     if (!file) return;
     try {
       const result = await uploadFile(file);
-      const imageUrl = `${BACKEND_URL}${result.url}`;
       setPropertyForm(prev => ({
         ...prev,
-        images: [...prev.images, { url: imageUrl, alt: file.name }],
+        images: [...prev.images, { url: result.url, alt: file.name }],
       }));
       toast.success('Imagen subida');
     } catch (error) {
@@ -594,8 +590,7 @@ const AdminDashboard = ({ user, onLogout }) => {
     setProfilePhotoUploading(true);
     try {
       const result = await uploadFile(file);
-      const photoUrl = `${BACKEND_URL}${result.url}`;
-      setUserForm(prev => ({ ...prev, foto_perfil: photoUrl }));
+      setUserForm(prev => ({ ...prev, foto_perfil: result.url }));
       toast.success('Foto de perfil subida');
     } catch (error) {
       toast.error('Error al subir la foto');
