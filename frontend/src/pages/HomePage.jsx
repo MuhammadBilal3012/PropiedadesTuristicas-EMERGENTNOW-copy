@@ -34,11 +34,62 @@ const HomePage = ({ agency }) => {
 
   const isYouTubeUrl = (url) => url && (url.includes('youtube.com') || url.includes('youtu.be'));
 
-  const getYouTubeEmbedUrl = (url) => {
+  const getYouTubeVideoId = (url) => {
     if (!url) return null;
-    const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&fs=0&disablekb=1&start=3` : null;
+    return url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1] || null;
   };
+
+  const getYouTubeEmbedUrl = (url) => {
+    const videoId = getYouTubeVideoId(url);
+    if (!videoId) return null;
+    // enablejsapi=1 lets us auto-resume on pause via the IFrame API below.
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&fs=0&disablekb=1&start=3&enablejsapi=1`;
+  };
+
+  // Force-resume the YouTube hero video if YouTube pauses it (e.g. after ads/buffering),
+  // so mobile control overlays stay hidden.
+  useEffect(() => {
+    const videoId = getYouTubeVideoId(videoUrl);
+    if (!videoId) return;
+
+    let player;
+    const ensureApi = () =>
+      new Promise((resolve) => {
+        if (window.YT && window.YT.Player) return resolve(window.YT);
+        const existing = document.querySelector('script[src*="youtube.com/iframe_api"]');
+        if (!existing) {
+          const s = document.createElement('script');
+          s.src = 'https://www.youtube.com/iframe_api';
+          document.head.appendChild(s);
+        }
+        const prev = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          prev?.();
+          resolve(window.YT);
+        };
+      });
+
+    let cancelled = false;
+    ensureApi().then((YT) => {
+      if (cancelled) return;
+      const iframe = document.getElementById('hero-youtube-player');
+      if (!iframe) return;
+      player = new YT.Player(iframe, {
+        events: {
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+              try { e.target.playVideo(); } catch (_) { /* ignore */ }
+            }
+          },
+        },
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      try { player?.destroy(); } catch (_) { /* ignore */ }
+    };
+  }, [videoUrl]);
 
   // Track visit and fetch view count
   useEffect(() => {
@@ -114,6 +165,7 @@ const HomePage = ({ agency }) => {
         {videoUrl && isYouTubeUrl(videoUrl) ? (
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <iframe
+              id="hero-youtube-player"
               src={getYouTubeEmbedUrl(videoUrl)}
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
               style={{
