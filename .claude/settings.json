@@ -53,7 +53,11 @@
       "Bash(./.venv313/Scripts/python.exe backend/scripts/fix_corrupted_urls.py)",
       "Bash(git config *)",
       "Bash(git remote *)",
-      "Bash(grep -E \"\\\\.env$|\\\\.env\\\\.\")"
+      "Bash(grep -E \"\\\\.env$|\\\\.env\\\\.\")",
+      "Bash(python -c \"import sys, json; d=json.load\\(sys.stdin\\); print\\('hero_video_url:', repr\\(d.get\\('hero_video_url'\\)\\)\\); print\\('video_url:', repr\\(d.get\\('video_url'\\)\\)\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
